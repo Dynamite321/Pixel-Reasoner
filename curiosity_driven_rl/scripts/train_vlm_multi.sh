@@ -97,7 +97,7 @@ find_interface() {
   fi
 }
 
-MULTINODE_FLAG=True
+MULTINODE_FLAG=False
 if [ -v MULTINODE_FLAG ]; then 
     # Define a string
     
@@ -116,7 +116,7 @@ else
     RAY_MASTER_NODE_PORT=$(shuf -n 1 -i 30000-65535)
     WORLD_SIZE=1
     NODE_RANK=0
-    GPUS_PER_NODE=8
+    GPUS_PER_NODE=4
 fi
 MASTER_HOST="$VC_WORKER_HOSTS"
 MASTER_ADDR="${VC_WORKER_HOSTS%%,*}"
@@ -131,10 +131,10 @@ export CUDA_LAUNCH_BLOCKING=1
 export HOST_IP=0.0.0.0
 export VLLM_HOST_IP=0.0.0.0
 
-working_dir=/path/to/workdir
-cd $working_dir
-export HF_ENDPOINT=https://hf-mirror.com
-export WANDB_API_KEY=""
+# working_dir=/path/to/workdir
+# cd $working_dir
+# export HF_ENDPOINT=https://hf-mirror.com
+export WANDB_API_KEY="b6f97d56866e502c9472a865bc800b00a848ae4e"
 nnode=$WORLD_SIZE
 tagname=${tagname:-""}
 dataver=${dataver:-"none"}
@@ -146,15 +146,15 @@ algo=${algo:-"group_sft"}
 temperature=${temperature:-"1.0"}
 numref=0
 fmt=${fmt:-"none"}
-bsz=${bsz:-"512"}
+bsz=${bsz:-"256"}
 rbuffer=${bsz:-"1024"}
 nsamples=${nsamples:-"8"}
 mbsz=${mbsz:-"4"}
 maxlen=${maxlen:-"6144"}
 lossver=${lossver:-"none"}
 mode=${mode:-"none"}
-nactor=${nactor:-"16"}
-nvllm=${nvllm:-"8"}
+nactor=${nactor:-"2"}
+nvllm=${nvllm:-"2"}
 filter=${filter:-"None"}
 repeat=${repeat:-"0"}
 nepoch=${nepoch:-"3"}
@@ -169,7 +169,7 @@ DATASET=/path/to/train.parquet
 MODEL_CPK_NAME=${save_name}
 PRETRAIN_MODEL=${policy}
 testdata="/path/to/test.parquet"
-SAVE_PATH=$working_dir/saves/$save_name
+SAVE_PATH=/fsx-project/yanjunfu/checkpoints/Pixel-Reasoner/saves/$save_name
 mkdir -p "${SAVE_PATH}"
 # pip install -U deepspeed==0.15.0 # https://github.com/OpenRLHF/OpenRLHF/issues/776#issuecomment-2694472824
 # 
@@ -179,9 +179,9 @@ post_args=""
 if [ $nnode -gt 1 ]; then
     
         post_args=(--ref_num_nodes 0
-            --ref_num_gpus_per_node 8 
+            --ref_num_gpus_per_node 4
             --actor_num_nodes ${nactor}
-            --actor_num_gpus_per_node 8 
+            --actor_num_gpus_per_node 4
             --vllm_num_engines ${nvllm} 
             --vllm_tensor_parallel_size ${tp}
             --micro_train_batch_size ${mbsz} 
@@ -192,10 +192,10 @@ if [ $nnode -gt 1 ]; then
     
 else 
     post_args=(--ref_num_nodes 0
-            --ref_num_gpus_per_node 8 
-            --actor_num_nodes 4
+            --ref_num_gpus_per_node 4
+            --actor_num_nodes 2
             --actor_num_gpus_per_node 1 
-            --vllm_num_engines 4 
+            --vllm_num_engines 2 
             --vllm_tensor_parallel_size 1
             --adam_offload
             --micro_train_batch_size 4 
@@ -205,14 +205,14 @@ else
     )
 fi
 # :/usr/local/cuda/targets/x86_64-linux/lib
-LD_LIBRARY_PATH_VALUE=/path/to/nvidia/nvjitlink/lib:$LD_LIBRARY_PATH
-export BNB_CUDA_VERSION=122
-RUNTIME_ENV_JSON="{\"env_vars\": {\"LD_LIBRARY_PATH\": \"$LD_LIBRARY_PATH_VALUE\"}}"
+# LD_LIBRARY_PATH_VALUE=/path/to/nvidia/nvjitlink/lib:$LD_LIBRARY_PATH
+# export BNB_CUDA_VERSION=122
+# RUNTIME_ENV_JSON="{\"env_vars\": {\"LD_LIBRARY_PATH\": \"$LD_LIBRARY_PATH_VALUE\"}}"
 
 
 if [ "$NODE_RANK" = "0" ]; then
     # Start Ray head node and capture the output
-    ray_output=$(ray start --head --num-gpus 8)
+    ray_output=$(ray start --head --num-gpus 4)
 
     # Extract the IP address using grep and sed
     ip_address=$(echo "$ray_output" | grep -oP "ray start --address='\K[^']+")

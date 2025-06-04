@@ -16,7 +16,7 @@
 import os
 os.environ['PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT'] = '2'
 import debugpy
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+# os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
 # if os.getenv("LOCAL_RANK") == "0":
 # # 5678 is the default attach port in the VS Code debug configurations. Unless a host and port are specified, host defaults to 127.0.0.1
@@ -85,6 +85,9 @@ from datasets import load_dataset
 from transformers.models.qwen2_5_vl.modeling_qwen2_5_vl import Qwen2_5_VLVisionFlashAttention2, apply_rotary_pos_emb_flashatt, flash_attn_varlen_func
 import torch
 from typing import Tuple,Optional,Union
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 SEED=42
