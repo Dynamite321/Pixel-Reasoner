@@ -18,7 +18,7 @@ python -m torch.distributed.run --nproc_per_node="4" \
     --deepspeed instruction_tuning/local_scripts/zero2.json \
     --output_dir /fsx-project/yanjunfu/checkpoints/Pixel-Reasoner/sft \
     --model_name_or_path Qwen/Qwen2.5-VL-7B-Instruct\
-    --datasetpath  /fsx-project/yanjunfu/datasets/Pixel-Reasoner/sft/train.parquet\
+    --datasetpath  /fsx-project/yanjunfu/datasets/Pixel-Reasoner/sft/train.json\
     --lr_scheduler_type cosine \
     --warmup_ratio 0.1 \
     --eval_strategy no \
@@ -37,7 +37,8 @@ python -m torch.distributed.run --nproc_per_node="4" \
     --save_strategy epoch \
     --save_steps 100 \
     --save_only_model true \
-    --freeze_vision_modules true 
+    --freeze_vision_modules true \
+    2>&1 | tee $LOG_PATH
 
 
     
